@@ -2,23 +2,7 @@ import React, { Component } from 'react'
 import {View,Text,Image,StyleSheet,StatusBar,SafeAreaView,ScrollView} from 'react-native';
 import {Actions} from 'react-native-router-flux';
 import ImagePicker from 'react-native-image-picker';
-var photoOption = {
-    title:'请选择',
-    cancelButtonTitle:'取消',
-    takePhotoButtonTitle:'拍照',
 
-}
-const styles = StyleSheet.create({
-	
-    iconStyle:{
-        fontFamily:'iconfont',
-        fontSize:24,
-        lineHeight:40,
-        marginLeft:10
-  
-	}
-	
-  });
   const options = {
     title: 'Select Avatar',
     customButtons: [{ name: 'fb', title: 'Choose Photo from Facebook' }],
@@ -46,12 +30,74 @@ const styles = StyleSheet.create({
      }
 
 export default class Per extends Component {
+  constructor(){
+    super();
+    let data = [];
+    for(var i=0; i<10; i++){
+        data.push({tit:i,key:i});
+    }
+    this.state = {
+        data,
+        width: new Animated.Value(20),
+        imageUrl:''
+    }
+}
+takephoto = ()=>{
+    ImageCropPicker.openCamera({
+        width: 300,
+        height: 400,
+        cropping: true,
+      }).then(image => {
+        this.setState({imageUrl:{uri:image.path}})
+      });
+    }
+    zoom = ()=>{
+      Animated.timing(this.state.width,{
+          toValue: 200,
+          // easing: Easing.elastic() 
+      }).start()
+  }
     render() {
         return (
+          
             <>
+            
             <StatusBar backgroundColor="#f23030" barStyle="dark-content" />
             <SafeAreaView>
               <ScrollView>
+              <View style={{flex:1}}>
+                
+                {/* horizontal:实现水平滚动 */}
+                {/* numColumns:实现分栏布局 */}
+                {/* <WebView style={{height:300}} source={{uri:'https://www.baidu.com'}}/> */}
+
+                {/* <ActivityIndicator size='large' color="red"/> */}
+                <Image 
+                    style={{width:300,height:300}} 
+                    source={this.state.imageUrl}
+                />
+                <View style={{alignItems:'center',marginBottom:20}}>
+                    <Button 
+                        onPress={()=>{Actions.mylist()}}
+                        style={styles.btn}
+                    >跳转 Mylist</Button>
+                </View>
+                <Button 
+                    onPress={()=>{this.zoom()}}
+                    style={styles.btn}
+                >变大</Button>
+                <Button 
+                    onPress={()=>{this.takephoto()}}
+                    style={styles.btn}
+                >拍照</Button>
+                <Animated.View
+                    style={{
+                        width: this.state.width,
+                        height: 200,
+                        backgroundColor: 'red'
+                    }}
+                ></Animated.View>
+                </View>
             <View style={{width:480,height:282,backgroundColor:'#f23030'}}>
                 <Image style={{width:125,height:125,marginTop:40,marginLeft:180}} source={require('../assets/icon/tou.png')}/>
                 <Text style={{color:'white',fontSize:24,marginTop:10,textAlign:'center'}}>BINNU DHILLON</Text>
@@ -118,3 +164,22 @@ export default class Per extends Component {
         )
     }
 }
+const styles = StyleSheet.create({
+  btn:{
+      width: 200,
+      height: 40,
+      color: '#fff',
+      textAlignVertical: 'center',
+      borderRadius: 20,
+      backgroundColor: 'red'
+  },
+  slide:{
+      width: width*0.4,
+      height: 300,
+      marginLeft: width*0.07,
+      marginTop:10,
+      backgroundColor: 'red',
+      justifyContent: 'center',
+      alignItems: 'center'
+  }
+})

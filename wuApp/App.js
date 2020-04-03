@@ -1,10 +1,4 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native     //原码
- *
- * @format
- * @flow
- */
+
 import {Router, Scene, Tabs} from 'react-native-router-flux';
 import React,{useState,useEffect} from 'react';
 import Msg from './components/Msg';
@@ -16,7 +10,7 @@ import Fa from './components/Fa';
 import SplashScreen from 'react-native-splash-screen'
 import {
   StyleSheet,
-  Image,
+  Image,BackHandler,ToastAndroid,AsyncStorage
 } from 'react-native';
 console.disableYellowBox = true;
 // JS
@@ -29,12 +23,61 @@ const styles = StyleSheet.create({
   });
 
 const App = () => {   // App: () => React$Node这是在给App指定类型
-  useEffect(()=>{
-	SplashScreen.hide();
-  },[])
+	let [isLogin,setLogin] = useState(false);
+	let [isInstall,setInstall] = useState(true);
+	let now = 0;
+	let init = ()=>{
+		AsyncStorage.getItem('isInstall')
+		.then(res=>{
+			console.log('isinstall',res)
+			if(res){
+				setInstall(false);
+			}
+		})
+		AsyncStorage.getItem('user')
+		.then(res=>{
+			let user = JSON.parse(res)
+			console.log(user)
+			if(!user){
+				SplashScreen.hide();
+			}
+			if(user&&user.token){
+				setLogin(true);
+				SplashScreen.hide();
+			}
+		})
+	}
+	useEffect(()=>{
+		init();
+	},[])
+	let afterInstall = ()=>{
+		console.log('after install')
+		setInstall(false)
+	}
+	if(isInstall){
+		return <View style={{flex:1}}>
+			<SwiperPage afterInstall={afterInstall}/>
+		</View>
+	}
   return (
     <>
-  <Router>
+  <Router
+			backAndroidHandler={()=>{
+				if(Actions.currentScene != 'home'){
+					Actions.pop();
+					return true;
+				}else{
+					if(new Date().getTime()-now<2000){
+						BackHandler.exitApp();
+					}else{
+						ToastAndroid.show('确定要退出吗',100);
+						now = new Date().getTime();
+						return true;
+					}
+				}
+				
+			}}
+		>
 	  
   <Scene key="root">
 	  
@@ -93,11 +136,7 @@ const App = () => {   // App: () => React$Node这是在给App指定类型
 					</Scene>
 				</Tabs>
 			</Scene>
-    
   </Router>
-    
-      
-      
 	</>
   );
 };
